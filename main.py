@@ -44,28 +44,11 @@ def process_img(image):
     sd = ShapeDetector()
     cd = ColorDetector()
     # convert to gray
-    # processed_img = imutils.resize(image, width=1500)
-    # ratio = image.shape[0]/float(processed_img.shape[0])
     processed_img = cv2.cvtColor(final, cv2.COLOR_BGR2GRAY)
     processed_img = cv2.equalizeHist(processed_img)
-    # processed_img = cv2.GaussianBlur(processed_img, (5, 5), 0)
-
-    # cv2.imshow("Image", processed_img)
-    # cv2.waitKey(0)
 
     # edge detection
     processed_img = cv2.Canny(processed_img, threshold1 = 100, threshold2 = 200)
-    # cv2.imshow("Image", processed_img)
-    # cv2.waitKey(0)
-
-    # kernel = np.ones((7, 7), np.uint8)
-    # processed_img = cv2.dilate(processed_img, kernel, iterations=1)
-    # processed_img = cv2.erode(processed_img, kernel, iterations=1)
-
-
-    # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    # thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
 
     cnts = cv2.findContours(processed_img.copy(), cv2.RETR_EXTERNAL,
                             cv2.CHAIN_APPROX_SIMPLE)
@@ -75,53 +58,6 @@ def process_img(image):
     x_coordinates = []
     y_coordinates = []
     lowestY = 999999
-    # for c in cnts:
-    #     # compute the center of the contour
-    #     M = cv2.moments(c)
-    #     if M["m00"] == 0:
-    #         M["m00"] = 1
-    #     cX = int(M["m10"] / M["m00"])
-    #     cY = int(M["m01"] / M["m00"])
-    #
-    #     shape = sd.detect(c)
-    #     if shape == "hexagon":
-    #         print(str(cX) + ", " + str(cY))
-    #         # draw the contour and center of the shape on the image
-    #         color = cd.determine_color(image, c)
-    #         cv2.drawContours(image, [c], -1, (0, 255, 0), 2)
-    #         cv2.circle(image, (cX, cY), 7, (255, 255, 255), -1)
-    #         cv2.putText(image, color, (cX - 20, cY - 20),
-    #                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-    #         if cY < lowestY:
-    #             lowestY = cY
-    #             game_board.append([color])
-    #             x_coordinates.append([cX])
-    #             y_coordinates.append(cY)
-    #
-    #         else:
-    #             for i in range(0, len(y_coordinates)):
-    #                 if cY == y_coordinates[i]:
-    #                     x_coordinates[i].append(cX)
-    #                     game_board[i].append(color)
-    # for i in range(0, len(x_coordinates)):
-    #     swapped = True
-    #     while swapped:
-    #         swapped = False
-    #         for j in range(len(x_coordinates[i]) - 1):
-    #             if x_coordinates[i][j] > x_coordinates[i][j + 1]:
-    #                 # Swap the elements
-    #                 x_coordinates[i][j], x_coordinates[i][j + 1] = x_coordinates[i][j + 1], x_coordinates[i][j]
-    #                 game_board[i][j], game_board[i][j + 1] = game_board[i][j + 1], game_board[i][j]
-    #                 # Set the flag to True so we'll loop again
-    #                 swapped = True
-    # game_board = game_board[::-1]
-    # x_coordinates = x_coordinates[::-1]
-    # y_coordinates = y_coordinates[::-1]
-
-    # solve_game(game_board, x_coordinates, y_coordinates)
-    # show the image
-    # cv2.imshow("Image", image)
-    # cv2.waitKey(0)
 
     cv2.imwrite("./Gray_Image.jpg", image)
 
@@ -182,6 +118,7 @@ def move(game_board, x, y):
     # print(game_board)
     return game_board
 # top and bottom
+
 
 def start_game(image, cnts):
     game_board = []
@@ -250,9 +187,6 @@ def solving_down(game_board, row, color):
                     i += 2
                 else:
                     x = i
-                    # while x > -1:
-                    #     instructions.append(x)
-                    #     x -= 1
                     if x + 1 <= len(game_board[row])/2:
                         while x > -1:
                             instructions.append(x)
@@ -324,12 +258,11 @@ def execute_instructions(instructions, row, x_coords, y_coords):
 
 def test_instructions(instructions, row, game_board):
     for instruction in instructions:
-        game_board = move(game_board, row, instruction)
+        game_board = move(game_board=game_board, x=row, y=instruction)
     return game_board
 
 
 def solve_game(game_board, x_coords, y_coords):
-
     # test for black
     row = 0
     maxiter = 0
@@ -337,7 +270,7 @@ def solve_game(game_board, x_coords, y_coords):
     black_all_instructions = []
     while row < 6:
         row, instructions = solving_down(game_board=game_board, row=row, color="black")
-        game_board = test_instructions(game_board, row, instructions)
+        game_board = test_instructions(instructions=instructions, row=row, game_board=game_board)
         black_counter += len(instructions)
         if maxiter == 30:
             break
@@ -351,13 +284,15 @@ def solve_game(game_board, x_coords, y_coords):
     white_all_instructions = []
     while row < 6:
         row, instructions = solving_down(game_board=game_board, row=row, color="white")
-        game_board = test_instructions(game_board, row, instructions)
+        game_board = test_instructions(instructions=instructions, row=row, game_board=game_board)
         white_counter += len(instructions)
         if maxiter == 30:
             break
         else:
             maxiter += 1
         white_all_instructions.append((row, instructions))
+
+    print("White: " + str(white_counter) + ", Black: " + str(black_counter))
     if white_counter < black_counter:
         for row, instructions in white_all_instructions:
             execute_instructions(instructions, row, x_coords, y_coords)

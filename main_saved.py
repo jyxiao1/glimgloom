@@ -10,9 +10,10 @@ import cv2
 import playsound
 import time
 
+animals = []
 
-def apply_brightness_contrast(input_img, brightness = 0, contrast = 0):
 
+def apply_brightness_contrast(input_img, brightness=0, contrast=0):
     if brightness != 0:
         if brightness > 0:
             shadow = brightness
@@ -20,7 +21,7 @@ def apply_brightness_contrast(input_img, brightness = 0, contrast = 0):
         else:
             shadow = 0
             highlight = 255 + brightness
-        alpha_b = (highlight - shadow)/255
+        alpha_b = (highlight - shadow) / 255
         gamma_b = shadow
 
         buf = cv2.addWeighted(input_img, alpha_b, input_img, 0, gamma_b)
@@ -28,9 +29,9 @@ def apply_brightness_contrast(input_img, brightness = 0, contrast = 0):
         buf = input_img.copy()
 
     if contrast != 0:
-        f = 131*(contrast + 127)/(127*(131-contrast))
+        f = 131 * (contrast + 127) / (127 * (131 - contrast))
         alpha_c = f
-        gamma_c = 127*(1-f)
+        gamma_c = 127 * (1 - f)
 
         buf = cv2.addWeighted(buf, alpha_c, buf, 0, gamma_c)
 
@@ -38,7 +39,6 @@ def apply_brightness_contrast(input_img, brightness = 0, contrast = 0):
 
 
 def process_img(image):
-
     final = apply_brightness_contrast(image, 12, 50)
 
     sd = ShapeDetector()
@@ -54,7 +54,7 @@ def process_img(image):
     # cv2.waitKey(0)
 
     # edge detection
-    processed_img = cv2.Canny(processed_img, threshold1 = 100, threshold2 = 200)
+    processed_img = cv2.Canny(processed_img, threshold1=100, threshold2=200)
     # cv2.imshow("Image", processed_img)
     # cv2.waitKey(0)
     #
@@ -143,9 +143,9 @@ def move(game_board, x, y):
 
     # left and right
     if y > 0:  # if column greater than 0
-        game_board[x][y - 1] = change_state(game_board[x][y - 1])   # color to the left is changed
+        game_board[x][y - 1] = change_state(game_board[x][y - 1])  # color to the left is changed
     if y < len(game_board[x]) - 1:  # if column less than row length
-        game_board[x][y + 1] = change_state(game_board[x][y + 1])   # color to the right is changed
+        game_board[x][y + 1] = change_state(game_board[x][y + 1])  # color to the right is changed
 
     # top and bottom
     # if not last row
@@ -181,6 +181,8 @@ def move(game_board, x, y):
                 game_board[x - 1][y - 1] = change_state(game_board[x - 1][y - 1])  # change left state
     # print(game_board)
     return game_board
+
+
 # top and bottom
 
 
@@ -220,6 +222,8 @@ def start_game(image, cnts):
                     if cY == y_coordinates[i]:
                         x_coordinates[i].append(cX)
                         game_board[i].append(color)
+    if len(game_board) == 0:
+        return
     for i in range(0, len(x_coordinates)):
         swapped = True
         while swapped:
@@ -237,14 +241,14 @@ def start_game(image, cnts):
     solve_game(game_board, x_coordinates, y_coordinates)
 
 
-#TODO: Create a more efficient algorithm
+# TODO: Create a more efficient algorithm
 def solving_down(game_board, row, color):
     instructions = []
     i = 0
     # if (row == 0) or (len(game_board[row]) < len(game_board[row + 1])):  # if row below is smaller
     if row < 3:
-        print(row)
-        print(game_board)
+        # print(row)
+        # print(game_board)
         while i < len(game_board[row]):
             tile = game_board[row][i]
             if tile == color:
@@ -253,10 +257,7 @@ def solving_down(game_board, row, color):
                     i += 2
                 else:
                     x = i
-                    # while x > -1:
-                    #     instructions.append(x)
-                    #     x -= 1
-                    if x + 1 <= len(game_board[row])/2:
+                    if x + 1 <= len(game_board[row]) / 2:
                         while x > -1:
                             instructions.append(x)
                             x -= 1
@@ -321,23 +322,53 @@ def execute_instructions(instructions, row, x_coords, y_coords, game_board):
     y = y_coords[row]
     for instruction in instructions:
         x = x_coords[row][instruction]
-        mouse.move(x*.8, y*.8, absolute=True, duration=0.13)
+        mouse.move(x*.8, y*.8, absolute=True, duration=0.25)
         game_board = move(game_board, row, instruction)
         mouse.click()
     return game_board
 
 
-# def test_instructions(instructions, row, game_board):
-#     y = y_coords[row]
-#     for instruction in instructions:
-#         x = x_coords[row][instruction]
-#         mouse.move(x*.8, y*.8, absolute=True, duration=0.13)
-#         game_board = move(game_board, row, instruction)
-#         mouse.click()
-#     return game_board
+def test_instructions(instructions, row, game_board):
+    for instruction in instructions:
+        game_board = move(game_board=game_board, x=row, y=instruction)
+    return game_board
 
 
 def solve_game(game_board, x_coords, y_coords):
+    # test for black
+    # temp_game_board = game_board
+    # row = 0
+    # maxiter = 0
+    # black_counter = 0
+    # black_all_instructions = []
+    # while row < 6:
+    #     row, instructions = solving_down(game_board=temp_game_board, row=row, color="black")
+    #     temp_game_board = test_instructions(instructions=instructions, row=row, game_board=temp_game_board)
+    #     black_counter += len(instructions)
+    #     if maxiter == 30:
+    #         break
+    #     else:
+    #         maxiter += 1
+    #     black_all_instructions.append((row, instructions))
+    #
+    # # test for white
+    # temp_game_board = game_board
+    # row = 0
+    # maxiter = 0
+    # white_counter = 0
+    # white_all_instructions = []
+    # while row < 6:
+    #     row, instructions = solving_down(game_board=temp_game_board, row=row, color="white")
+    #     temp_game_board = test_instructions(instructions=instructions, row=row, game_board=temp_game_board)
+    #     white_counter += len(instructions)
+    #     if maxiter == 30:
+    #         break
+    #     else:
+    #         maxiter += 1
+    #     white_all_instructions.append((row, instructions))
+    #
+    # print("White: " + str(white_counter) + ", Black: " + str(black_counter))
+
     # test for black
     row = 0
     maxiter = 0
@@ -350,22 +381,20 @@ def solve_game(game_board, x_coords, y_coords):
             break
         else:
             maxiter += 1
-    # # test for white
-    # row = 0
-    # maxiter = 0
-    # while row < 6:
-    #     row, instructions = solving_down(game_board=game_board, row=row, color="white")
-    #     game_board = execute_instructions(instructions, row, x_coords, y_coords, game_board)
-    #     # print(row)
-    #     # print(instructions)
-    #     if maxiter == 30:
-    #         break
-    #     else:
-    #         maxiter += 1
+
+    # if white_counter < black_counter:
+    #     for row, instructions in white_all_instructions:
+    #         execute_instructions(instructions, row, x_coords, y_coords)
+    # else:
+    #     for row, instructions in black_all_instructions:
+    #         execute_instructions(instructions, row, x_coords, y_coords)
+
 
 def press_next(image, cnts):
     sd = ShapeDetector()
     cd = ColorDetector()
+
+    pressed = False
 
     for c in cnts:
         M = cv2.moments(c)
@@ -379,11 +408,12 @@ def press_next(image, cnts):
             print(str(cX) + ", " + str(cY))
             mouse.move(cX * .8, cY * .8, absolute=True, duration=0.05)
             mouse.click()
+            pressed = True
 
 
 def screen_grab():
     screengrab = ImageGrab.grab()
-    screengrab_raw = np.array(screengrab, dtype='uint8')\
+    screengrab_raw = np.array(screengrab, dtype='uint8') \
         .reshape((screengrab.size[1], screengrab.size[0], 3))
 
     image, cnts = process_img(screengrab_raw)
@@ -398,29 +428,72 @@ while True:
         image, cnts = screen_grab()
         start_game(image, cnts)
     except:
-        image, cnts = screen_grab()
-        start_game(image, cnts)
-    time.sleep(0.25)
-    try:
-        image, cnts = screen_grab()
-        start_game(image, cnts)
-    except:
-        image, cnts = screen_grab()
-        start_game(image, cnts)
-    time.sleep(0.25)
-    try:
-        image, cnts = screen_grab()
-        start_game(image, cnts)
-    except:
-        image, cnts = screen_grab()
-        start_game(image, cnts)
+        print()
+        # playsound.playsound('Card Shuffle sound effect.mp3')
 
-    time.sleep(0.75)
-    image, cnts = screen_grab()
-    press_next(image, cnts)
+    time.sleep(0.1)
+    try:
+        image, cnts = screen_grab()
+        start_game(image, cnts)
+    except:
+        print()
+        # playsound.playsound('Card Shuffle sound effect.mp3')
+    time.sleep(0.1)
+    try:
+        image, cnts = screen_grab()
+        start_game(image, cnts)
+    except:
+        print()
+        # playsound.playsound('Card Shuffle sound effect.mp3')
+    time.sleep(0.1)
+    try:
+        image, cnts = screen_grab()
+        start_game(image, cnts)
+    except:
+        # playsound.playsound('Card Shuffle sound effect.mp3')
+        time.sleep(0.3)
+    time.sleep(0.1)
+    try:
+        image, cnts = screen_grab()
+        start_game(image, cnts)
+    except:
+        playsound.playsound('Wrong Buzzer Sound effect.mp3')
+        print("Hexagon")
+        keyboard.wait('`')
     time.sleep(0.5)
 
-    if limit > 46:
+    press_flag = False
+    try:
+        image, cnts = screen_grab()
+        press_next(image, cnts)
+        press_flag = True
+    except:
+        playsound.playsound('Card Shuffle sound effect.mp3')
+        time.sleep(0.25)
+
+    if not press_flag:
+        time.sleep(0.25)
+        try:
+            image, cnts = screen_grab()
+            press_next(image, cnts)
+            press_flag = True
+        except:
+            print("PressNext")
+    if not press_flag:
+        time.sleep(0.25)
+        try:
+            image, cnts = screen_grab()
+            press_next(image, cnts)
+            press_flag = True
+        except:
+            playsound.playsound('Wrong Buzzer Sound effect.mp3')
+            print("PressNext")
+            keyboard.wait('`')
+
+
+    time.sleep(0.5)
+
+    if limit > 49:
         limit = 0
         playsound.playsound('Sparkle-sound-effect.mp3')
         keyboard.wait('`')
@@ -429,4 +502,3 @@ while True:
     # except:
     #     print("ERROR")
     #     # break  # if user pressed a key other than the given key the loop will break
-

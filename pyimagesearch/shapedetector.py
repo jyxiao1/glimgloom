@@ -14,7 +14,7 @@ class ShapeDetector:
         if (4000 < area < 4500) and (250 < peri < 260):
             shape = "hexagon"
             return shape
-        if (area > 15000) and (400 < peri < 800):
+        if (area > 13000) and (400 < peri < 800):
             print(str(peri) + " " + str(area))
             shape = "rectangle"
 
