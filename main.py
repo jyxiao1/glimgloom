@@ -252,7 +252,7 @@ def execute_instructions(instructions, row, x_coords, y_coords):
     y = y_coords[row]
     for instruction in instructions:
         x = x_coords[row][instruction]
-        mouse.move(x*.8, y*.8, absolute=True, duration=0.13)
+        mouse.move(x, y, absolute=True, duration=0.3)
         mouse.click()
 
 
@@ -314,7 +314,7 @@ def press_next(image, cnts):
         shape = sd.detect(c)
         if shape == "rectangle":
             print(str(cX) + ", " + str(cY))
-            mouse.move(cX * .8, cY * .8, absolute=True, duration=0.12)
+            mouse.move(cX, cY, absolute=True, duration=0.12)
             mouse.click()
 
 
@@ -349,7 +349,7 @@ while True:
     press_next(image, cnts)
     time.sleep(1)
 
-    if limit > 46:
+    if limit > 48:
         limit = 0
         playsound.playsound('Sparkle-sound-effect.mp3')
         keyboard.wait('`')

@@ -322,7 +322,7 @@ def execute_instructions(instructions, row, x_coords, y_coords, game_board):
     y = y_coords[row]
     for instruction in instructions:
         x = x_coords[row][instruction]
-        mouse.move(x*.8, y*.8, absolute=True, duration=0.25)
+        mouse.move(x, y, absolute=True, duration=0.25)
         game_board = move(game_board, row, instruction)
         mouse.click()
     return game_board
@@ -406,7 +406,7 @@ def press_next(image, cnts):
         shape = sd.detect(c)
         if shape == "rectangle":
             print(str(cX) + ", " + str(cY))
-            mouse.move(cX * .8, cY * .8, absolute=True, duration=0.05)
+            mouse.move(cX, cY, absolute=True, duration=0.05)
             mouse.click()
             pressed = True
 
